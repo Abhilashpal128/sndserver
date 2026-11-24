@@ -16,7 +16,7 @@ atelier-interiors/
 ## Quick Vercel deployment
 
 1. Import a repository containing this backend as a **new Vercel project**. Use **Root Directory** `.` when the repository contains the contents of `mail-server/` directly, or `mail-server` when the repository contains the parent project folder. For a local CLI deployment, run `npx vercel` from `mail-server/` and follow the setup prompts for a new backend project.
-2. Choose **Other** as the framework. Use Node.js **24.x**, the included build command (`npm run check`), and leave the Output Directory override disabled. The files in `api/` become Node.js functions; do not deploy `dist/` or run `npm start` as a build command.
+2. Choose **Other** as the framework. Use Node.js **24.x**. The included `vercel.json` sets **Build Command** to `npm run check` and **Output Directory** to `public`. If you set dashboard overrides, use those same values. Commit `public/robots.txt` so the output folder exists and contains a file. Only `public/` is served as static files; `api/health.js` and `api/leads.js` are deployed separately as Node.js functions. Do not set the output directory to the project root or run `npm start` as a build command.
 3. Add these environment variables to the **backend project**, then deploy:
 
    | Variable | Value |
@@ -75,6 +75,8 @@ This service sends one notification to the business inbox. It does not store lea
 The honeypot, exact-origin CORS, 16 KB body limit and per-IP limit provide basic protection. CORS is a browser control, not authentication. Rate limiting (five new attempts per 15 minutes) and duplicate suppression are held in bounded memory **per warm function instance**. They reset on cold starts and are not shared between instances. For stronger abuse protection or durable deduplication, add a shared store and/or a CAPTCHA. SMTP timeouts can have uncertain delivery outcomes, so a later retry may duplicate an email.
 
 Common setup issues:
+
+- **STATIC_BUILD_NO_OUT_DIR / missing public directory:** Push both `vercel.json` and `public/robots.txt`. Keep Output Directory set to `public`. The syntax check does not generate frontend assets; this tracked folder supplies the minimal static output Vercel expects alongside the API functions.
 
 - **403:** Add the frontend's actual origin to `CORS_ORIGINS` and redeploy the backend.
 - **503:** Set both Gmail variables in the backend's active deployment environment and redeploy.
